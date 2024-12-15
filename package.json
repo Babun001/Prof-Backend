@@ -5,7 +5,7 @@
   "type": "module",
   "main": "index.js",
   "scripts": {
-    "start": "nodemon index.js"
+    "start": "nodemon src/index.js"
   },
   "keywords": [
     "NodeJs",
@@ -14,5 +14,8 @@
     "Backend"
   ],
   "author": "Babun ROy",
-  "license": "ISC"
+  "license": "ISC",
+  "devDependencies": {
+    "nodemon": "^3.1.9"
+  }
 }
