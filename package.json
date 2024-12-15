@@ -1,17 +1,17 @@
 {
   "name": "prof-backbone",
   "version": "1.0.0",
-  "description": "This is a professional backend file structure technique",
+  "description": "This is professional file structure of backend",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
     "NodeJs",
-    "ExpressJs",
-    "backend",
-    "mongoDB"
+    "Express",
+    "MongoDB",
+    "Backend"
   ],
-  "author": "Babun Roy",
+  "author": "Babun ROy",
   "license": "ISC"
 }
