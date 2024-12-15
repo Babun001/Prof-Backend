@@ -2,9 +2,10 @@
   "name": "prof-backbone",
   "version": "1.0.0",
   "description": "This is professional file structure of backend",
+  "type": "module",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "nodemon index.js"
   },
   "keywords": [
     "NodeJs",
