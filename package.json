@@ -1,0 +1,18 @@
+{
+  "name": "prof-backbone",
+  "version": "1.0.0",
+  "description": "This is the backend code in professional technique",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "start": "nodemon index.js"
+  },
+  "keywords": [
+    "NodeJs",
+    "JavaScript",
+    "Express",
+    "Backend"
+  ],
+  "author": "Babun Roy",
+  "license": "ISC"
+}
