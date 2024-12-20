@@ -27,7 +27,9 @@ app.use(express.urlencoded({
 // to get users cookies
 // app.use(cookiePerser());
 
+import userRouter from "./routes/users.routes.js"
 
+app.use("/users/api/v1",userRouter);
 
 
 export {app}

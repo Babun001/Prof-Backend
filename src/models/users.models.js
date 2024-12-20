@@ -51,7 +51,7 @@ userSchema.pre("save", async function (next) {
 
 //// create a new method on userSchema (checkPassword)
 userSchema.methods.checkPassword(async function (password) {
-    return await bcrypt.compare(password, this.password); //// it will return true or false as promise
+    return await bcrypt.compare(password, this.password);
 });
 
 userSchema.methods.genarateAccessToken = function () {
