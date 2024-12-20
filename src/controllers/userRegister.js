@@ -1,9 +1,10 @@
 import {asyncAwaitHandler} from "../utilities/asyncFuncHandler.js";
 
-const userRegister = asyncAwaitHandler((req, res) =>{
+const userRegister = asyncAwaitHandler(async(req, res) =>{
     res.status(200).json({
-        message:"You are awesome"
+        message:"All right"
     })
 })
+
 
 export {userRegister};
