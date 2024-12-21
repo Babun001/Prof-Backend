@@ -2,36 +2,59 @@ import {asyncAwaitHandler} from "../utilities/asyncFuncHandler.js";
 import apiError from "../utilities/apiErrorsHandler.js";
 import apiResponse from '../utilities/apiResponseHandler.js';
 import {gmailValidation, userNameValidation,  passwordValidation} from '../utilities/validation.js';
-
+import {User} from '../models/users.models.js';
+import uploadFiles  from '../utilities/fileUpload.js' ;
 
 const userRegister = asyncAwaitHandler(async(req, res) =>{
     const {userName, emailId, fullName,  password} = req.body;
     if(userName === "" || emailId === "" ||  password === ""){
-        throw new apiError(409, "All Fields are Required!!");
+        throw new apiError(400, "All Fields are Required!!");
     }
 
-    if(!gmailValidation(emailId)){
-        throw new Error(401, "Enter Valid mail iD!");
-    }else{
-        if(!userNameValidation(userName)){
-            throw new Error(402, "Enter Valid UserName!");
-        }else{
-            if(!passwordValidation(password)){
-                throw new Error(403, `Enter Valid password!!
-1. Password must have upper case and lower case letters.
-2. Password must have special characters.
-3. Password should not contant any space.
-4. Password should be greater than 8 characters.
-5. Password must have numaric characters.
-                    `)
-            }else{
-                console.log("Validation Successful!");
-                throw new apiResponse(200,"Successfull!!");
-                
-            }
-        }
+    if (!gmailValidation(emailId) || !userNameValidation(fullName) || !passwordValidation(password)){
+        throw new apiError(400, "Enter Valid Credentials");
     }
 
+    // const existingUser = User.findOne({userName} && {emailId})
+
+    // if(existingUser){
+    //     throw new apiError(409, "User or mail is already exist!!");
+    // }
+
+    const avatarLocalPath = req.files?.Avatar[0]?.path
+    const coverImageLocalPath = req.files?.coverImage[0]?.path
+
+    if(!avatarLocalPath){
+        throw new apiError(400, "Avatar is required!!");
+    }
+
+    const avatar = await uploadFiles(avatarLocalPath);
+    const coverImage = await uploadFiles(coverImageLocalPath);
+
+    if(!avatar) {
+        throw new apiError(400, "Avatar is required!!");
+    }
+    
+    const user = await User.create({
+        userName : userName,
+        emailId : emailId,
+        fullName : fullName,
+        avatar : avatar.url,
+        coverImage : coverImage.url || "",
+        password : password
+    })
+
+    const createdUser = User.findById(user._id).select(
+        "-password -"
+    )
+
+    if(!createdUser){
+        throw new apiError(500, "Something went wrong! Unable to register user!!");
+    }
+
+    return res.status(200).json(
+        new apiResponse(200,createdUser, "User Registered Successfully!!")
+    )
 
 })
 
