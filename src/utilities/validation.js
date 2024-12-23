@@ -5,15 +5,14 @@ const gmailValidation = (gmail) =>{
 }
 
 const userNameValidation = (name) =>{
-    name = name.trim(" ");
-    return (!name)?false
-    :   (name.length<=20)?true:false;
+    return (name.includes(" ") || name.length>10)?false:true;
 }
 
 
 const passwordValidation = (pw) =>{
     return (!pw || pw.length<8 || pw.includes(" ") || !(/^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9]).+$/.test(pw)))? false: true;
 }
+
 
 
 export { gmailValidation, userNameValidation,  passwordValidation};
