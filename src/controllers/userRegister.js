@@ -48,18 +48,20 @@ const userRegister = asyncAwaitHandler(async (req, res) => {
         password: password
     })
 
-    // const createdUser = await User.findById(CreateUserData._id).select(
-    //     "-password -refreshToken"
-    // )
+    const createdUser = await User.findById(CreateUserData._id).select(
+        "-password -refreshToken"
+    )
 
-    console.log(CreateUserData);
+    if(!createdUser){
+        throw new apiError(500,"Something went wrong! Try again!!");
+    }
+
+    // console.log(createdUser);
     
 
-
-    // console.log({userName, emailId, fullName, cloudinaryAvatar, cloudinaryCoverImage, password});
-
-
-
+    res.status(201).json(
+        new apiResponse(200,"User Registered Successfully!!",createdUser)
+    )
 
 })
 
