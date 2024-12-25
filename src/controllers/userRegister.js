@@ -5,6 +5,30 @@ import { gmailValidation, userNameValidation, passwordValidation } from '../util
 import { User } from '../models/users.models.js';
 import uploadFiles from '../utilities/fileUpload.js';
 
+
+const generateAccessAndRefreshToken = async (userId) =>{
+    try {
+
+        const user = await User.findOne(userId);
+        if(!user){
+            throw new apiError(404,"User not found!!");
+        }
+        const accessToken = await user.genarateAccessToken();
+        const refreshToken = await user.genarateRefreshToken();
+
+        user.refreshToken = refreshToken;
+        user.save({
+            validateBeforeSave: false
+        });
+
+        return {accessToken, refreshToken};
+        
+    } catch (error) {
+        throw new apiError(500,"Something Went wrong! Unable to generate token!!")
+    }
+}
+
+
 const userRegister = asyncAwaitHandler(async (req, res) => {
     const { userName, emailId, fullName, password } = req.body;
     if (userName === "" || emailId === "" || password === "") {
@@ -76,18 +100,26 @@ const userLogin = async (req, res) =>{
     })
 
     if(!user){
-        throw new apiError(404,"User not found!!")
+        throw new apiError(404,"User not found!!");
     }
 
     const passwordCheck = await user.passwordCheck(password);
 
     if(!passwordCheck){
-        throw new apiError(400,"Incorrect Password!!")
+        throw new apiError(400,"Incorrect Password!!");
     }
 
-    console.log(passwordCheck);
-    
+    // console.log(passwordCheck);
 
+    // generate a new refresh token
+    // generate cookies
+    // send response to user
+    
+    const { accessToken, refreshToken } = await generateAccessAndRefreshToken(user._id);
+
+    const loggedIn = await User.findById(user._id).select(
+        "-password -refreshToken"
+    );
 
 }
 
