@@ -3,5 +3,4 @@ const asyncAwaitHandler = (requestFunction) =>{
         Promise.resolve(requestFunction(req,res,next)).catch(err => next(err));
     }
 };
-
 export {asyncAwaitHandler};

@@ -52,18 +52,46 @@ const userRegister = asyncAwaitHandler(async (req, res) => {
         "-password -refreshToken"
     )
 
-    if(!createdUser){
-        throw new apiError(500,"Something went wrong! Try again!!");
+    if (!createdUser) {
+        throw new apiError(500, "Something went wrong! Try again!!");
     }
 
     // console.log(createdUser);
-    
+
 
     res.status(201).json(
-        new apiResponse(200,"User Registered Successfully!!",createdUser)
+        new apiResponse(200, "User Registered Successfully!!", createdUser)
     )
 
 })
 
+const userLogin = async (req, res) =>{
+    const {userName, emailId, password} = req.body;
+    if(!userName || !emailId || !password){
+        throw new apiError(400, "all field required!!")
+    }
 
-export { userRegister };
+    const user = await User.findOne({
+        $or:[{userName},{emailId}]
+    })
+
+    if(!user){
+        throw new apiError(404,"User not found!!")
+    }
+
+    const passwordCheck = await user.passwordCheck(password);
+
+    if(!passwordCheck){
+        throw new apiError(400,"Incorrect Password!!")
+    }
+
+    console.log(passwordCheck);
+    
+
+
+}
+
+export {
+    userRegister,
+    userLogin
+};
