@@ -121,9 +121,55 @@ const userLogin = async (req, res) =>{
         "-password -refreshToken"
     );
 
+    const selector = {
+        httpOnly: true,
+        secure: true
+    }
+    
+
+    return res
+    .status(200)
+    .cookie("accessToken", accessToken, selector)
+    .cookie("refreshToken", refreshToken, selector)
+    .json(
+        new apiResponse(200,{
+            user: accessToken, refreshToken, loggedIn
+        },"User LoggedIn successfully!!!")
+    )
+
 }
+
+const userLogOut = asyncAwaitHandler(async (req,res) =>{
+    User.findByIdAndUpdate(
+        req.user._id,
+        {
+            $set :{
+                refreshToken: undefined
+            }
+        },
+        {
+            new:true
+        }
+    )
+
+    const selector = {
+        httpOnly: true,
+        secure: true
+    }
+
+    return res
+    .status(200)
+    .clearCookie("accessToken",selector)
+    .clearCookie("refreshToken",selector)
+    .json(
+        new apiResponse(200,"User LoggedOut successfully!!!")
+    )
+
+})
+
 
 export {
     userRegister,
-    userLogin
+    userLogin,
+    userLogOut
 };

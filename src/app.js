@@ -1,6 +1,7 @@
 import express from 'express';
 import cors from 'cors';
-import cookiePerser from 'cookies-parser';
+
+import cookiesParser from 'cookie-parser';
 
 
 const app = express();
@@ -25,7 +26,7 @@ app.use(express.urlencoded({
 }));
 
 // to get users cookies
-// app.use(cookiePerser());
+app.use(cookiesParser());
 
 
 
