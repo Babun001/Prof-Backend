@@ -58,28 +58,36 @@ userSchema.methods.passwordCheck = async function(pw){
 }
 
 userSchema.methods.genarateAccessToken = function () {
-    jwt.sign(
-        {
-            _id: this._id,
-            emailId: this.emailId,
-            userName: this.userName
-        },
-        process.env.ACCESS_SECRET_TOKEN,
-        {
-            expiresIn:process.env.ACCESS_SECRET_TOKEN_EXPIRY
-        }
-    );
+    try {
+        return jwt.sign(
+            {
+                _id: this._id,
+                emailId: this.emailId,
+                userName: this.userName
+            },
+            process.env.ACCESS_SECRET_TOKEN,
+            {
+                expiresIn:process.env.ACCESS_SECRET_TOKEN_EXPIRY
+            }
+        );
+    } catch (error) {
+        console.error("Error to generate access Token");
+    }
 }
-userSchema.methods.genarateRefreshToken = function () {
-    jwt.sign(
-        {
-            _id: this._id,
-        },
-        process.env.REFRESH_SECRET_TOKEN,
-        {
-            expiresIn:process.env.REFRESH_SECRET_TOKEN_EXPIRY
-        }
-    );
+userSchema.methods.genarateRefreshToken = function() {
+    try {
+        return jwt.sign(
+            {
+                _id: this._id
+            },
+            process.env.REFRESH_SECRET_TOKEN,
+            {
+                expiresIn:process.env.REFRESH_SECRET_TOKEN_EXPIRY
+            }
+        );
+    } catch (error) {
+        console.error("Error to generate refresh Token");
+    }
 }
 
 export const User = mongoose.model('User', userSchema);

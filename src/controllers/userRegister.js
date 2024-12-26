@@ -9,15 +9,16 @@ import uploadFiles from '../utilities/fileUpload.js';
 const generateAccessAndRefreshToken = async (userId) =>{
     try {
 
-        const user = await User.findOne(userId);
+        const user = await User.findById(userId);
         if(!user){
             throw new apiError(404,"User not found!!");
         }
-        const accessToken = await user.genarateAccessToken();
-        const refreshToken = await user.genarateRefreshToken();
+
+        const accessToken = user.genarateAccessToken();
+        const refreshToken = user.genarateRefreshToken();
 
         user.refreshToken = refreshToken;
-        user.save({
+        await user.save({
             validateBeforeSave: false
         });
 
@@ -122,7 +123,7 @@ const userLogin = async (req, res) =>{
     );
 
     const selector = {
-        httpOnly: true,
+        httpOnly: false,
         secure: true
     }
     
@@ -140,31 +141,33 @@ const userLogin = async (req, res) =>{
 }
 
 const userLogOut = asyncAwaitHandler(async (req,res) =>{
-    User.findByIdAndUpdate(
+
+
+    const loggedOut = await User.findByIdAndUpdate(
         req.user._id,
         {
-            $set :{
+            $set:{
                 refreshToken: undefined
             }
         },
         {
-            new:true
+            new: true
         }
     )
 
+    
+
     const selector = {
-        httpOnly: true,
+        httpOnly: false,
         secure: true
     }
-
     return res
-    .status(200)
-    .clearCookie("accessToken",selector)
-    .clearCookie("refreshToken",selector)
+    .status(201)
+    .clearCookie("accessToken", selector)
+    .clearCookie("refreshToken", selector)
     .json(
-        new apiResponse(200,"User LoggedOut successfully!!!")
+        new apiResponse(200,loggedOut, "LoggedOut successfully")
     )
-
 })
 
 
