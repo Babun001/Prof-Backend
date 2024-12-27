@@ -168,11 +168,46 @@ const userLogOut = asyncAwaitHandler(async (req,res) =>{
     .json(
         new apiResponse(200,loggedOut, "LoggedOut successfully")
     )
+});
+
+// if user wants to change the old password
+const changeOldPassword = asyncAwaitHandler(async (req,res) =>{
+    const {oldPassword, newPassword } = req.body
+    try {
+        const user = await User.findById(req.user?._id);
+        if(!user){
+            throw new apiError(404,"User not found!!");
+        }
+    
+        const checkPass = await user.passwordCheck(oldPassword);
+        if(!checkPass){
+            throw new apiError(404,"Old password is incorrect!!");
+        }
+    
+        user.password = newPassword;
+        await user.save({validateBeforeSave:false});
+        
+        return res.status(201).json(new apiResponse(201,"Password changed Successful!!"))
+    } catch (error) {
+        throw new apiError(404,"error in change Old Password method in userRegister line number 174");
+    }
+})
+
+// what if the user forget the password
+const forgetPassword = asyncAwaitHandler(async (req, res) =>{
+    // Alog
+    /*  1. generate a new token
+        2. send it via smtp server
+        3. verify the token is correct or not
+        4. if yes then reset the password with new password    
+    */
 })
 
 
 export {
     userRegister,
     userLogin,
-    userLogOut
+    userLogOut,
+    changeOldPassword,
+    forgetPassword
 };

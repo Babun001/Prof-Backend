@@ -6,7 +6,7 @@ import { User } from '../models/users.models.js';
 
 
 
-export const jwtCheck = asyncAwaitHandler(async (req,res,next) =>{
+export const jwtCheck = asyncAwaitHandler(async (req,_,next) =>{
     try {
         const token = req.cookies?.accessToken || req.header('Authorization').replece("Bearer ","");
         if(!token){
@@ -23,8 +23,8 @@ export const jwtCheck = asyncAwaitHandler(async (req,res,next) =>{
 
         req.user = user;
         next();
-        
+                
     } catch (error) {
-        throw new apiError(402, error?.message || "Something went wrong in jwt token!!")
+        throw new apiError(402, "Something went wrong in jwt token!!")
     }
 })

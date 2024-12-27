@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { userRegister, userLogin, userLogOut } from "../controllers/userRegister.js";
+import { userRegister, userLogin, userLogOut, changeOldPassword } from "../controllers/userRegister.js";
 import { upload } from "../middlewares/multer.middleware.js";
 import { jwtCheck } from '../middlewares/jwt.middleware.js'
 
@@ -19,8 +19,10 @@ router.route("/register").post(
         ]
     ), userRegister);
 
-router.route("/login").post(userLogin);
+router.route("/login").post( userLogin );
 
-router.route("/logOut").post(jwtCheck, userLogOut);
+router.route("/logOut").post( jwtCheck, userLogOut );
+
+router.route("/changepassword").post( jwtCheck,  changeOldPassword )
 
 export default router;
