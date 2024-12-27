@@ -170,7 +170,7 @@ const userLogOut = asyncAwaitHandler(async (req,res) =>{
     )
 });
 
-// if user wants to change the old password
+//// if user wants to change the old password
 const changeOldPassword = asyncAwaitHandler(async (req,res) =>{
     const {oldPassword, newPassword } = req.body
     try {
@@ -193,14 +193,72 @@ const changeOldPassword = asyncAwaitHandler(async (req,res) =>{
     }
 })
 
-// what if the user forget the password
+//// what if the user forget the password
 const forgetPassword = asyncAwaitHandler(async (req, res) =>{
-    // Alog
+    //// Alog
     /*  1. generate a new token
         2. send it via smtp server
         3. verify the token is correct or not
         4. if yes then reset the password with new password    
     */
+})
+
+//// change the avatar or coverImage
+const changeAvatar = asyncAwaitHandler(async (req,res)=>{
+    /**
+     * 0. check the user is logged in or not === he can change the avatar iff logged in
+     * 1. get the updated avatar using multer
+     * 2. upload it on cloudinary
+     * 3. replace the user.avatar = newAvatar link
+     * 4. save and update the data
+     * 5. send response to user
+     */
+
+    const user = await User.findById(req.user._id);
+    if(!user){
+        throw new apiError(404,"User not found!!!")
+    }
+
+    const updatedAvatarLocalPath = req.files?.updatedAvatar?.[0].path;
+    if(!updatedAvatarLocalPath){
+        throw new apiError(401, "New avatar path not found!!");
+    }
+
+    const cloudinaryNewAvatarPath = await uploadFiles(updatedAvatarLocalPath);
+    if(!cloudinaryNewAvatarPath){
+        throw new apiError(401, "failed to upload new avatar to cloudinary!!!");
+    }
+
+    user.avatar = cloudinaryNewAvatarPath?.url;
+    user.save({validateBeforeSave:false})
+
+    return res.status(200).json(new apiResponse(200,"Avatar changed successfully"))
+})
+
+
+
+////if the user wants to change the cover image 
+
+const changeCoverImage = asyncAwaitHandler(async (req,res)=>{
+       const user = await User.findById(req.user._id);
+    if(!user){
+        throw new apiError(404,"User not found!!!")
+    }
+
+    const updatedCoverImageLocalPath = req.files?.updatedCoverImage?.[0].path;
+    if(!updatedCoverImageLocalPath){
+        throw new apiError(401, "New avatar path not found!!");
+    }
+
+    const cloudinaryNewCoverImagerPath = await uploadFiles(updatedCoverImageLocalPath);
+    if(!cloudinaryNewCoverImagerPath){
+        throw new apiError(401, "failed to upload new avatar to cloudinary!!!");
+    }
+
+    user.avatar = cloudinaryNewCoverImagerPath?.url;
+    user.save({validateBeforeSave:false})
+
+    return res.status(200).json(new apiResponse(200,"Cover Image changed successfully"))
 })
 
 
@@ -209,5 +267,6 @@ export {
     userLogin,
     userLogOut,
     changeOldPassword,
-    forgetPassword
+    forgetPassword,
+    changeAvatar
 };

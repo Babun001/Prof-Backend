@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { userRegister, userLogin, userLogOut, changeOldPassword } from "../controllers/userRegister.js";
+import { userRegister, userLogin, userLogOut, changeOldPassword, changeAvatar } from "../controllers/userRegister.js";
 import { upload } from "../middlewares/multer.middleware.js";
 import { jwtCheck } from '../middlewares/jwt.middleware.js'
 
@@ -19,10 +19,23 @@ router.route("/register").post(
         ]
     ), userRegister);
 
-router.route("/login").post( userLogin );
+router.route("/login").post(userLogin);
 
-router.route("/logOut").post( jwtCheck, userLogOut );
+router.route("/logOut").post(jwtCheck, userLogOut);
 
-router.route("/changepassword").post( jwtCheck,  changeOldPassword )
+router.route("/changepassword").post(jwtCheck, changeOldPassword);
+
+router.route("/updateAvatar").post
+    (
+        jwtCheck,
+        upload.fields([{ name: 'updatedAvatar', maxCount: 1 }]),
+        changeAvatar
+    );
+
+router.route("/changecoverImage").post
+(
+    jwtCheck,
+    upload.fields([{name: "updatedCoverImage", maxCount:1}])
+)
 
 export default router;
