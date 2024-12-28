@@ -4,6 +4,7 @@ import apiResponse from '../utilities/apiResponseHandler.js';
 import { gmailValidation, userNameValidation, passwordValidation } from '../utilities/validation.js';
 import { User } from '../models/users.models.js';
 import uploadFiles from '../utilities/fileUpload.js';
+import mongoose from "mongoose";
 
 
 const generateAccessAndRefreshToken = async (userId) => {
@@ -305,16 +306,16 @@ const getChannel = asyncAwaitHandler(async (req, res) => {
             }
         },
         {
-            $addFields:{
-                subscriberCount:{
-                    $size:"$SubscriberCounts"
+            $addFields: {
+                subscriberCount: {
+                    $size: "$SubscriberCounts"
                 },
-                channelSubscribedCounts:{
+                channelSubscribedCounts: {
                     $size: "$SubscribedChannelCounts"
                 },
                 subscribedORnot: {
-                    $cond:{
-                        if: {$in: [req.user?._id, "$SubscriberCounts"]},
+                    $cond: {
+                        if: { $in: [req.user?._id, "$SubscriberCounts"] },
                         then: true,
                         else: false
                     }
@@ -322,7 +323,7 @@ const getChannel = asyncAwaitHandler(async (req, res) => {
             }
         },
         {
-            $project : {
+            $project: {
                 userName: 1,
                 avatar: 1,
                 coverImage: 1,
@@ -333,14 +334,71 @@ const getChannel = asyncAwaitHandler(async (req, res) => {
         }
     ])
 
-    if(!channel?.length){
-        throw new apiError(402,"channel not found!!")
+    if (!channel?.length) {
+        throw new apiError(402, "channel not found!!")
     }
 
     return res.status(200).json(
         new apiResponse(200, channel?.[0], "Channel found!!")
     )
-    
+});
+
+
+// let's build a watchHistory endpoint
+
+const watchHistoryEndPoint = asyncAwaitHandler(async (req, res) => {
+    const user = await User.aggregate([
+        {
+            $match: {
+                _id: mongoose.Schema.Types.ObjectId(req.user._id)
+            }
+        },
+        {
+            $lookup: {
+                from: "videos",
+                localField: "watchHistory",
+                foreignField: "_id",
+                as: "WatchHistory",
+                pipeline: [
+                    {
+                        $lookup: {
+                            from: "users",
+                            localField: "owner",
+                            foreignField: "_id",
+                            as: "Owner",
+                            pipeline:[
+                                {
+                                    $project:{
+                                        userName:1,
+                                        fullName:1,
+                                        avatar: 1
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        $addFields:{
+                            Owner:{
+                                $first: "$Owner"
+                            }
+                        }
+                    }
+                ]
+            }          
+        },
+    ])
+
+    if(!user){
+        throw new apiError(402,"User history is not generated!!!")
+    }
+
+    return res
+    .status(200)
+    .json(
+        new apiResponse(200, user?.[0].watchHistory, "User history fetched successfully!!")
+    )
+
 
 })
 
