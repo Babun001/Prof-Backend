@@ -5,6 +5,7 @@ import {
     userLogOut,
     changeOldPassword,
     changeAvatar,
+    changeCoverImage,
     getChannel
 } from "../controllers/userRegister.js";
 import { upload } from "../middlewares/multer.middleware.js";
@@ -39,7 +40,7 @@ router.route("/updateAvatar").post
         changeAvatar
     );
 
-router.route("/changecoverImage").post
+router.route("/changeCoverImage").post
     (
         jwtCheck,
         upload.fields([{ name: "updatedCoverImage", maxCount: 1 }])

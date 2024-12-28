@@ -352,5 +352,6 @@ export {
     changeOldPassword,
     forgetPassword,
     changeAvatar,
+    changeCoverImage,
     getChannel
 };
