@@ -411,5 +411,6 @@ export {
     forgetPassword,
     changeAvatar,
     changeCoverImage,
-    getChannel
+    getChannel,
+    watchHistoryEndPoint
 };
