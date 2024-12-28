@@ -6,12 +6,12 @@ import { User } from '../models/users.models.js';
 import uploadFiles from '../utilities/fileUpload.js';
 
 
-const generateAccessAndRefreshToken = async (userId) =>{
+const generateAccessAndRefreshToken = async (userId) => {
     try {
 
         const user = await User.findById(userId);
-        if(!user){
-            throw new apiError(404,"User not found!!");
+        if (!user) {
+            throw new apiError(404, "User not found!!");
         }
 
         const accessToken = user.genarateAccessToken();
@@ -22,10 +22,10 @@ const generateAccessAndRefreshToken = async (userId) =>{
             validateBeforeSave: false
         });
 
-        return {accessToken, refreshToken};
-        
+        return { accessToken, refreshToken };
+
     } catch (error) {
-        throw new apiError(500,"Something Went wrong! Unable to generate token!!")
+        throw new apiError(500, "Something Went wrong! Unable to generate token!!")
     }
 }
 
@@ -90,24 +90,24 @@ const userRegister = asyncAwaitHandler(async (req, res) => {
 
 })
 
-const userLogin = async (req, res) =>{
-    const {userName, emailId, password} = req.body;
-    if(!userName || !emailId || !password){
+const userLogin = async (req, res) => {
+    const { userName, emailId, password } = req.body;
+    if (!userName || !emailId || !password) {
         throw new apiError(400, "all field required!!")
     }
 
     const user = await User.findOne({
-        $or:[{userName},{emailId}]
+        $or: [{ userName }, { emailId }]
     })
 
-    if(!user){
-        throw new apiError(404,"User not found!!");
+    if (!user) {
+        throw new apiError(404, "User not found!!");
     }
 
     const passwordCheck = await user.passwordCheck(password);
 
-    if(!passwordCheck){
-        throw new apiError(400,"Incorrect Password!!");
+    if (!passwordCheck) {
+        throw new apiError(400, "Incorrect Password!!");
     }
 
     // console.log(passwordCheck);
@@ -115,7 +115,7 @@ const userLogin = async (req, res) =>{
     // generate a new refresh token
     // generate cookies
     // send response to user
-    
+
     const { accessToken, refreshToken } = await generateAccessAndRefreshToken(user._id);
 
     const loggedIn = await User.findById(user._id).select(
@@ -126,27 +126,27 @@ const userLogin = async (req, res) =>{
         httpOnly: false,
         secure: true
     }
-    
+
 
     return res
-    .status(200)
-    .cookie("accessToken", accessToken, selector)
-    .cookie("refreshToken", refreshToken, selector)
-    .json(
-        new apiResponse(200,{
-            user: accessToken, refreshToken, loggedIn
-        },"User LoggedIn successfully!!!")
-    )
+        .status(200)
+        .cookie("accessToken", accessToken, selector)
+        .cookie("refreshToken", refreshToken, selector)
+        .json(
+            new apiResponse(200, {
+                user: accessToken, refreshToken, loggedIn
+            }, "User LoggedIn successfully!!!")
+        )
 
 }
 
-const userLogOut = asyncAwaitHandler(async (req,res) =>{
+const userLogOut = asyncAwaitHandler(async (req, res) => {
 
 
     const loggedOut = await User.findByIdAndUpdate(
         req.user._id,
         {
-            $set:{
+            $set: {
                 refreshToken: undefined
             }
         },
@@ -155,46 +155,46 @@ const userLogOut = asyncAwaitHandler(async (req,res) =>{
         }
     )
 
-    
+
 
     const selector = {
         httpOnly: false,
         secure: true
     }
     return res
-    .status(201)
-    .clearCookie("accessToken", selector)
-    .clearCookie("refreshToken", selector)
-    .json(
-        new apiResponse(200,loggedOut, "LoggedOut successfully")
-    )
+        .status(201)
+        .clearCookie("accessToken", selector)
+        .clearCookie("refreshToken", selector)
+        .json(
+            new apiResponse(200, loggedOut, "LoggedOut successfully")
+        )
 });
 
 //// if user wants to change the old password
-const changeOldPassword = asyncAwaitHandler(async (req,res) =>{
-    const {oldPassword, newPassword } = req.body
+const changeOldPassword = asyncAwaitHandler(async (req, res) => {
+    const { oldPassword, newPassword } = req.body
     try {
         const user = await User.findById(req.user?._id);
-        if(!user){
-            throw new apiError(404,"User not found!!");
+        if (!user) {
+            throw new apiError(404, "User not found!!");
         }
-    
+
         const checkPass = await user.passwordCheck(oldPassword);
-        if(!checkPass){
-            throw new apiError(404,"Old password is incorrect!!");
+        if (!checkPass) {
+            throw new apiError(404, "Old password is incorrect!!");
         }
-    
+
         user.password = newPassword;
-        await user.save({validateBeforeSave:false});
-        
-        return res.status(201).json(new apiResponse(201,"Password changed Successful!!"))
+        await user.save({ validateBeforeSave: false });
+
+        return res.status(201).json(new apiResponse(201, "Password changed Successful!!"))
     } catch (error) {
-        throw new apiError(404,"error in change Old Password method in userRegister line number 174");
+        throw new apiError(404, "error in change Old Password method in userRegister line number 174");
     }
 })
 
 //// what if the user forget the password
-const forgetPassword = asyncAwaitHandler(async (req, res) =>{
+const forgetPassword = asyncAwaitHandler(async (req, res) => {
     //// Alog
     /*  1. generate a new token
         2. send it via smtp server
@@ -204,7 +204,7 @@ const forgetPassword = asyncAwaitHandler(async (req, res) =>{
 })
 
 //// change the avatar or coverImage
-const changeAvatar = asyncAwaitHandler(async (req,res)=>{
+const changeAvatar = asyncAwaitHandler(async (req, res) => {
     /**
      * 0. check the user is logged in or not === he can change the avatar iff logged in
      * 1. get the updated avatar using multer
@@ -215,50 +215,133 @@ const changeAvatar = asyncAwaitHandler(async (req,res)=>{
      */
 
     const user = await User.findById(req.user._id);
-    if(!user){
-        throw new apiError(404,"User not found!!!")
+    if (!user) {
+        throw new apiError(404, "User not found!!!")
     }
 
     const updatedAvatarLocalPath = req.files?.updatedAvatar?.[0].path;
-    if(!updatedAvatarLocalPath){
+    if (!updatedAvatarLocalPath) {
         throw new apiError(401, "New avatar path not found!!");
     }
 
     const cloudinaryNewAvatarPath = await uploadFiles(updatedAvatarLocalPath);
-    if(!cloudinaryNewAvatarPath){
+    if (!cloudinaryNewAvatarPath) {
         throw new apiError(401, "failed to upload new avatar to cloudinary!!!");
     }
 
     user.avatar = cloudinaryNewAvatarPath?.url;
-    user.save({validateBeforeSave:false})
+    user.save({ validateBeforeSave: false })
 
-    return res.status(200).json(new apiResponse(200,"Avatar changed successfully"))
+    return res.status(200).json(new apiResponse(200, "Avatar changed successfully"))
 })
 
 
 
 ////if the user wants to change the cover image 
 
-const changeCoverImage = asyncAwaitHandler(async (req,res)=>{
-       const user = await User.findById(req.user._id);
-    if(!user){
-        throw new apiError(404,"User not found!!!")
+const changeCoverImage = asyncAwaitHandler(async (req, res) => {
+    const user = await User.findById(req.user._id);
+    if (!user) {
+        throw new apiError(404, "User not found!!!")
     }
 
     const updatedCoverImageLocalPath = req.files?.updatedCoverImage?.[0].path;
-    if(!updatedCoverImageLocalPath){
+    if (!updatedCoverImageLocalPath) {
         throw new apiError(401, "New avatar path not found!!");
     }
 
     const cloudinaryNewCoverImagerPath = await uploadFiles(updatedCoverImageLocalPath);
-    if(!cloudinaryNewCoverImagerPath){
+    if (!cloudinaryNewCoverImagerPath) {
         throw new apiError(401, "failed to upload new avatar to cloudinary!!!");
     }
 
     user.avatar = cloudinaryNewCoverImagerPath?.url;
-    user.save({validateBeforeSave:false})
+    user.save({ validateBeforeSave: false })
 
-    return res.status(200).json(new apiResponse(200,"Cover Image changed successfully"))
+    return res.status(200).json(new apiResponse(200, "Cover Image changed successfully"))
+})
+
+const getChannel = asyncAwaitHandler(async (req, res) => {
+    const { username } = req.params;
+    if (!(username?.trim())) {
+        throw new apiError(401, "Channel not found|| error in userRegister.js line 267")
+    }
+
+    /** sample data for better understanding
+     * {"_id":{"$oid":"676ecff08903415c85fc3241"},
+     * "userName":"abcdefg",
+     * "emailId":"abcdefg@gmail.com",
+     * "fullName":"abc defg",
+     * "avatar":"http://res.cloghpli.jpg",
+     * "coverImage":"",
+     * "password":"$2ClNKiGAzO8iy6",
+     * "watchHistory":[],
+     * "createdAt":{"$date":{"$numberLong":"1735315440310"}},
+     * "updatedAt":{"$date":{"$numberLong":"1735315690204"}},
+     * "__v":{"$numberInt":"0"},
+     * "refreshToken":"eyJhbGciOiJIUzI1NiIsInRDQ1NJ1oiLIs_py6nDR2c"}
+     */
+
+    const channel = await User.aggregate([
+        {
+            $match: {
+                userName: username.toLowerCase()
+            }
+        },
+        {
+            $lookup: {
+                from: "subscribers",
+                localField: "_id",
+                foreignField: "channelName",
+                as: "SubscriberCounts"
+            }
+        },
+        {
+            $lookup: {
+                from: "subscribers",
+                localField: "_id",
+                foreignField: "subscriber",
+                as: "SubscribedChannelCounts"
+            }
+        },
+        {
+            $addFields:{
+                subscriberCount:{
+                    $size:"$SubscriberCounts"
+                },
+                channelSubscribedCounts:{
+                    $size: "$SubscribedChannelCounts"
+                },
+                subscribedORnot: {
+                    $cond:{
+                        if: {$in: [req.user?._id, "$SubscriberCounts"]},
+                        then: true,
+                        else: false
+                    }
+                }
+            }
+        },
+        {
+            $project : {
+                userName: 1,
+                avatar: 1,
+                coverImage: 1,
+                subscriberCount: 1,
+                channelSubscribedCounts: 1,
+                subscribedORnot: 1,
+            }
+        }
+    ])
+
+    if(!channel?.length){
+        throw new apiError(402,"channel not found!!")
+    }
+
+    return res.status(200).json(
+        new apiResponse(200, channel?.[0], "Channel found!!")
+    )
+    
+
 })
 
 
@@ -268,5 +351,6 @@ export {
     userLogOut,
     changeOldPassword,
     forgetPassword,
-    changeAvatar
+    changeAvatar,
+    getChannel
 };

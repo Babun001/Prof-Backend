@@ -1,5 +1,12 @@
 import { Router } from "express";
-import { userRegister, userLogin, userLogOut, changeOldPassword, changeAvatar } from "../controllers/userRegister.js";
+import {
+    userRegister,
+    userLogin,
+    userLogOut,
+    changeOldPassword,
+    changeAvatar,
+    getChannel
+} from "../controllers/userRegister.js";
 import { upload } from "../middlewares/multer.middleware.js";
 import { jwtCheck } from '../middlewares/jwt.middleware.js'
 
@@ -33,9 +40,12 @@ router.route("/updateAvatar").post
     );
 
 router.route("/changecoverImage").post
-(
-    jwtCheck,
-    upload.fields([{name: "updatedCoverImage", maxCount:1}])
-)
+    (
+        jwtCheck,
+        upload.fields([{ name: "updatedCoverImage", maxCount: 1 }])
+    )
+
+router.route("/abc").post(getChannel);
+
 
 export default router;
