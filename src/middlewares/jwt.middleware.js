@@ -19,12 +19,12 @@ export const jwtCheck = asyncAwaitHandler(async (req,_,next) =>{
             throw new apiError(403,"Token verify failed!!");
         }
 
-        const user = await User.findById(verifyToken._id);
+        const decodedData = await User.findById(verifyToken._id);
 
-        req.user = user;
+        req.user = decodedData;
         next();
                 
     } catch (error) {
-        throw new apiError(402, "Something went wrong in jwt token!!")
+        throw new apiError(402, error?.message || "Something went wrong in jwt token!!")
     }
 })

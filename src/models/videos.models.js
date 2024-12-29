@@ -23,10 +23,10 @@ const videoSchema = new mongoose.Schema(
         },
         duration:{
             type:Number,
-            required:true
+            // required:true
         },
         isPublished:{
-            type:boolean,
+            type: Boolean,
             default:true
         },
         owner:{
