@@ -9,7 +9,8 @@ import {
     getChannel
 } from "../controllers/userRegister.js";
 import { upload } from "../middlewares/multer.middleware.js";
-import { jwtCheck } from '../middlewares/jwt.middleware.js'
+import { jwtCheck } from '../middlewares/jwt.middleware.js';
+import { uploadVideo } from '../controllers/video.controller.js';
 
 const router = Router();
 
@@ -47,6 +48,11 @@ router.route("/changeCoverImage").post
     )
 
 router.route("/abc").post(getChannel);
+
+router.route("/videoupload").post(
+    jwtCheck,
+    upload.fields([{ name: "videoFile", maxCount: 1 }, { name: "thumbnail", maxCount: 1 }]), uploadVideo
+);
 
 
 export default router;

@@ -3,7 +3,7 @@ import apiError from '../utilities/apiErrorsHandler.js'
 import apiResponse from '../utilities/apiResponseHandler.js';
 import uploadFiles from '../utilities/fileUpload.js';
 import { User } from '../models/users.models.js';
-
+import mongoose from 'mongoose';
 import {Video} from '../models/videos.models.js';
 
 const uploadVideo = asyncAwaitHandler(async ( req,res ) =>{
@@ -28,6 +28,8 @@ const uploadVideo = asyncAwaitHandler(async ( req,res ) =>{
         if(!user){
             throw new apiError(401, "User not found!!")
         }
+        console.log(user);
+        
         
     
         const { title, description } = req.body;
@@ -35,6 +37,7 @@ const uploadVideo = asyncAwaitHandler(async ( req,res ) =>{
             throw new apiError(401,"video upload failed!!")
         }
 
+        
         
     
         const localVideoFile = await req.files?.videoFile?.[0].path
@@ -47,58 +50,47 @@ const uploadVideo = asyncAwaitHandler(async ( req,res ) =>{
             throw new apiError(500,"Something went wrong! thumbnail upload failed");
         }
 
-        console.log([user?.userName , title, description, localVideoFile, localThumbnailFile]);
-    
+        
+
+        
         const cloudinaryVideoFile = await uploadFiles(localVideoFile);
         const cloudinarythumbnailFile = await uploadFiles(localThumbnailFile);
-    
+        
+        
         if(!cloudinaryVideoFile){
-            throw new apiError(500,"Something went wrong! video upload failed");
+                throw new apiError(500,"Something went wrong! video upload failed");
         }
         if(!cloudinarythumbnailFile){
-            throw new apiError(500,"Something went wrong! thumbnail upload failed");
+                throw new apiError(500,"Something went wrong! thumbnail upload failed");
         }
-
-        console.log([user?.userName , title, description, localVideoFile, localThumbnailFile, cloudinaryVideoFile, cloudinarythumbnailFile]);
         
+        // console.table([user?.userName , title, description, localVideoFile, localThumbnailFile, cloudinaryVideoFile.url, cloudinarythumbnailFile.url]);
+
         const storedVideoDetails = await Video.create({
-            videoFile: cloudinaryVideoFile?.url,
+            videoFile: cloudinaryVideoFile.url,
             title: title,
             description: description,
-            thumbnail: cloudinarythumbnailFile?.url,
-            owner: user?.userName,
+            thumbnail: cloudinarythumbnailFile.url,
+            owner: new mongoose.Types.ObjectId(user._id),
         })
-
-        console.log(user?.userName , 
-            title, 
-            description, 
-            localVideoFile, 
-            localThumbnailFile, 
-            cloudinaryVideoFile, 
-            cloudinarythumbnailFile, 
-            storedVideoDetails);
         
-        // if(!storedVideoDetails){
-        //     throw new apiError(404, "Unable to upload video")
-        // }
+        if(!storedVideoDetails){
+            throw new apiError(404, "Unable to upload video")
+        }
+        console.log(`storedVideoDetails uploaded complete!!`);
         
-        // return res
-        // .status(200)
-        // .json(
-        //     new apiResponse(201, storedVideoDetails, "Video uploaded Successfully!!")
-        // )
-    
-        //console.table([cloudinaryVideoFile?.url, title, description, cloudinarythumbnailFile?.url, user?.userName])
-
-        console.log("Working...");
+        
+        return res
+        .status(200)
+        .json(
+            new apiResponse(201, storedVideoDetails, "Video uploaded Successfully!!")
+        )
         
         
     } catch (error) {
-        throw new apiError(400, "something went wrong! unable to upload video")
+        throw new apiError(400, error.message || `something went wrong to upload video!`);
+        
     }
-    
-    
-    
 })
 
 export { uploadVideo }
